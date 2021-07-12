@@ -1,0 +1,31 @@
+type Query {
+    job(id: ID!): Job # Example of indicating params to be passed, like ID
+    jobs: [Job]
+    company(id: ID!): Company
+}
+
+type Mutation {
+    createJob(input: CreateJobInput): Job # See below custom definition
+}
+
+type Company {
+    id: ID!
+    name: String
+    description: String,
+    jobs: [Job]
+}
+
+type Job {
+    id: ID! # Exclamation indicates mandatory field
+    title: String,
+    company: Company
+    description: String
+}
+
+# Input types must be specified differently than Output types
+# This will let us custom define how our inputs for a query/mutation should be
+input CreateJobInput {
+    companyId: ID
+    title: String
+    description: String
+}
