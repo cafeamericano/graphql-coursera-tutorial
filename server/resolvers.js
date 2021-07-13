@@ -8,9 +8,15 @@ const Query = {
 };
 
 const Mutation = {
-    createJob: (root, {input}) => {
+    createJob: (root, {input}, context) => {
+        const user = context.user;
+        // Check user auth
+        console.log(context)
+        if(!user) {
+            throw new Error('Unauthorized');
+        }
         // In our schema, we specified that this mutation should return Job
-        const id = db.jobs.create(input);
+        const id = db.jobs.create({...input, companyId: user.companyId});
         return db.jobs.get(id);
     }
 }
