@@ -1,31 +1,31 @@
+import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from 'apollo-boost';
+import gql from 'graphql-tag';
 import { getAccessToken, isLoggedIn } from "./auth";
 
 const endpointURL = 'http://localhost:9000/graphql'
 
-async function graphqlRequest(query, variables = {}) {
-    const request = {
-        method: "POST",
-        headers: {'content-type': 'application/json'},
-        body: JSON.stringify({
-            query, 
-            variables
-        })
-    };
+const authLink = new ApolloLink((operation, forward) => {
     if (isLoggedIn()) {
-        request.headers['authorization'] = 'Bearer ' + getAccessToken();
+        operation.setContext({
+            headers: {
+                'authorization': 'Bearer ' + getAccessToken()
+            }
+        });
     }
-    const response = await fetch(endpointURL, request);
-    const responseBody = await response.json();
-    if (responseBody.errors) {
-        // This will show more specifically on the React error screen what the problems are
-        const message = responseBody.errors.map((error) => error.message).join('\n');
-        throw new Error(message);
-    }
-    return responseBody.data;
-}
+    return forward(operation);
+});
+
+const client = new ApolloClient({
+    link: ApolloLink.from([
+        authLink, // For request authentication
+        new HttpLink({uri: endpointURL})
+    ]),
+    cache: new InMemoryCache()
+});
+
 
 export async function loadJob(id) {
-    const query = `
+    const query = gql`
         query JobQuery($id: ID!) {
             job(id: $id) {
                 id
@@ -38,12 +38,12 @@ export async function loadJob(id) {
             }
         }
     `;
-    const data = await graphqlRequest(query, {id});
+    const {data} = await client.query({query, variables: {id}});
     return data.job;
 }
 
 export async function loadJobs() {
-    const query = `
+    const query = gql`
         {
             jobs {
                 id
@@ -55,12 +55,12 @@ export async function loadJobs() {
             }
         }
     `;
-    const data = await graphqlRequest(query);
+    const {data} = await client.query({query});
     return data.jobs;
 }
 
 export async function loadCompany(id) {
-    const query = `
+    const query = gql`
         query CompanyQuery($id: ID!) {
             company(id: $id) {
                 id
@@ -73,12 +73,12 @@ export async function loadCompany(id) {
             }
         }
     `;
-    const data = await graphqlRequest(query, {id});
+    const {data} = await client.query({query, variables: {id}});
     return data.company;
 }
 
 export async function createJob(input) {
-    const mutation = `
+    const mutation = gql`
         mutation CreateJob($input: CreateJobInput) {
             job: createJob(input: $input) {
                 id
@@ -90,6 +90,6 @@ export async function createJob(input) {
             }
         }
     `;
-    const data = await graphqlRequest(mutation, {input});
+    const {data} = await client.mutate({mutation, variables: {input}});
     return data.job;
 }
