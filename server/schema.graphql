@@ -25,7 +25,6 @@ type Job {
 # Input types must be specified differently than Output types
 # This will let us custom define how our inputs for a query/mutation should be
 input CreateJobInput {
-    companyId: ID
     title: String
     description: String
 }
