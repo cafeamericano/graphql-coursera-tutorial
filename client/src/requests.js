@@ -1,25 +1,38 @@
-import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from 'apollo-boost';
+import {
+    ApolloClient, ApolloLink, HttpLink, InMemoryCache, split
+} from '@apollo/client';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { getMainDefinition } from '@apollo/client/utilities';
 import gql from 'graphql-tag';
 import { getAccessToken, isLoggedIn } from "./auth";
 
-const endpointURL = 'http://localhost:9000/graphql'
+const httpUrl = 'http://localhost:9000/graphql'
+const wsUrl = 'ws://localhost:9000/graphql';
 
-const authLink = new ApolloLink((operation, forward) => {
-    if (isLoggedIn()) {
-        operation.setContext({
-            headers: {
-                'authorization': 'Bearer ' + getAccessToken()
-            }
-        });
-    }
-    return forward(operation);
-});
+const httpLink = ApolloLink.from([
+    new ApolloLink((operation, forward) => {
+        const token = getAccessToken();
+        if (token) {
+            operation.setContext({headers: {'authorization': `Bearer ${token}`}});
+        }
+        return forward(operation);
+    }),
+    new HttpLink({uri: httpUrl})
+]);
+
+const wsLink = new WebSocketLink({uri: wsUrl, options: {
+    lazy: true,
+    reconnect: true
+}});
+  
+function isSubscription(operation) {
+const definition = getMainDefinition(operation.query);
+return definition.kind === 'OperationDefinition'
+    && definition.operation === 'subscription';
+}
 
 const client = new ApolloClient({
-    link: ApolloLink.from([
-        authLink, // For request authentication
-        new HttpLink({uri: endpointURL})
-    ]),
+    link: split(isSubscription, wsLink, httpLink),
     cache: new InMemoryCache()
 });
 
@@ -76,6 +89,19 @@ const companyQuery = gql`
     }
 `;
 
+const jobAddedSubscription = gql`
+  subscription {
+    jobAdded {
+        id
+        title
+        company {
+            id
+            name
+        }
+    }
+  }
+`;
+
 export async function loadJob(id) {
     const {data} = await client.query({query: jobQuery, variables: {id}});
     return data.job;
@@ -110,3 +136,8 @@ export async function createJob(input) {
     });
     return job;
 }
+
+export function onJobAdded(handleJob) {
+    const observable = client.subscribe({query: jobAddedSubscription});
+    return observable.subscribe(({data}) => handleJob(data.jobAdded));
+  }
