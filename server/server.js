@@ -1,4 +1,5 @@
 const fs = require('fs');
+const http = require('http');
 const { ApolloServer, gql } = require('apollo-server-express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -19,7 +20,23 @@ app.use(cors(), bodyParser.json(), expressJwt({
 // GRAPHQL ITEMS
 const typeDefs = gql(fs.readFileSync('./schema.graphql', {encoding: 'utf8'}));
 const resolvers = require('./resolvers');
-const context = ({req}) => ({user: req.user && db.users.get(req.user.sub)}); // For use with authentication; 'sub' is user id
+
+const context = ({req, connection}) => {
+  if (req && req.user) {
+    return {
+      user: req.user && db.users.get(req.user.sub),
+      userId: req.user.sub
+    };
+  }
+  if (connection && connection.context && connection.context.accessToken) {
+    const decodedToken = jwt.verify(connection.context.accessToken, jwtSecret);
+    return {
+      user: req.user && db.users.get(req.user.sub),
+      userId: decodedToken.sub
+    };
+  }
+}
+
 const apolloServer = new ApolloServer({typeDefs, resolvers, context});
 apolloServer.applyMiddleware({app, path: '/graphql'});
 
@@ -34,4 +51,6 @@ app.post('/login', (req, res) => {
   res.send({token});
 });
 
-app.listen(port, () => console.info(`Server started on port ${port}`));
+const httpServer = http.createServer(app);
+apolloServer.installSubscriptionHandlers(httpServer);
+httpServer.listen(port, () => console.log(`Server started on port ${port}`));

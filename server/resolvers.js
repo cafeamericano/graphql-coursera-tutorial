@@ -1,9 +1,14 @@
 const db = require('./db');
 require('./config');
+const { PubSub } = require('graphql-subscriptions');
 const { 
     JobModel,
     CompanyModel
  } = require('./models');
+
+ const JOB_ADDED = 'JOB_ADDED';
+
+const pubSub = new PubSub();
 
 const Query = {
     // This should mirror what we have in the 'Query' type inside our schema file
@@ -21,14 +26,24 @@ const Mutation = {
             throw new Error('Unauthorized');
         }
         // In our schema, we specified that this mutation should return Job
-        const id = await JobModel.create({
+        const job = await JobModel.create({
             ...input,
             id: Math.random().toString(),
             companyId: user.companyId
         });
-        return id;
+        pubSub.publish(JOB_ADDED, {jobAdded: job});
+        return job;
     }
 }
+
+const Subscription = {
+    jobAdded: {
+      subscribe: (_root, _args, {userId}) => {
+        requireAuth(userId); // This line here will secure our WebSocket transmissions
+        return pubSub.asyncIterator(MESSAGE_ADDED);
+      }
+    }
+};
 
 const Company = {
     // Return the jobs whose companyId is the same as the id for this company
@@ -43,6 +58,7 @@ const Job = {
 module.exports = { 
     Query,
     Mutation,
+    Subscription,
     Company,
     Job 
 };
