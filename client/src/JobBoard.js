@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { JobList } from './JobList';
-import { loadJobs } from './requests';
+import { loadJobs, onJobAdded } from './requests';
 
 export class JobBoard extends Component {
 
@@ -11,6 +11,15 @@ export class JobBoard extends Component {
 
   componentDidMount() {
     this.getJobs();
+    this.subscription = onJobAdded((job) => {
+      this.setState({jobs: this.state.jobs.concat(job)});
+    });
+  }
+
+  componentWillUnmount() {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   getJobs = async () => {
