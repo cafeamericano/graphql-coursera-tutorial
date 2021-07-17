@@ -1,35 +1,25 @@
-import React, { Component } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { loadJob, createJob } from './requests';
 
-export class JobDetail extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {job: null};
-  }
+const JobDetail = ({match}) => {
+  const [jobDetails, setJobDetails] = useState(null);
 
-  componentDidMount() {
-    this.getJobDetails();
-  }
+  useEffect(() => {
+    loadJob(match.params.jobId).then((job) => setJobDetails(job));
+  }, []);
 
-  getJobDetails = async () => {
-    const {jobId} = this.props.match.params;
-    const job = await loadJob(jobId);
-    this.setState({job});
-  }
+  if (!jobDetails) { return null; }
+  return (
+    <div>
+      <h1 className="title">{jobDetails.title}</h1>
+      <h2 className="subtitle">
+        <Link to={`/companies/${jobDetails.company.id}`}>{jobDetails.company.name}</Link>
+      </h2>
+      <div className="box">{jobDetails.description}</div>
+    </div>
+  );
 
-  render() {
-    const {job} = this.state;
-    if (!job) { return null; }
-
-    return (
-      <div>
-        <h1 className="title">{job.title}</h1>
-        <h2 className="subtitle">
-          <Link to={`/companies/${job.company.id}`}>{job.company.name}</Link>
-        </h2>
-        <div className="box">{job.description}</div>
-      </div>
-    );
-  }
 }
+
+export default JobDetail;

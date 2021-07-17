@@ -1,17 +1,11 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
-export class JobList extends Component {
-  render() {
-    const {jobs} = this.props;
-    return (
-      <ul className="box">
-        {jobs.map(this.renderJob.bind(this))}
-      </ul>
-    );
-  }
+const JobList = ({jobs}) => {
 
-  renderJob(job) {
+  console.log(jobs);
+  
+  const renderJob = (job) => {
     const title = job.company ? `${job.title} at ${job.company.name}` : job.title;
     return (
       <li className="media" key={job.id}>
@@ -21,4 +15,12 @@ export class JobList extends Component {
       </li>
     );
   }
+
+  return (
+    <ul className="box">
+      {jobs.map(renderJob)}
+    </ul>
+  );
 }
+
+export default JobList;

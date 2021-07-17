@@ -12,7 +12,9 @@
     "express": "4.17.1",
     "express-jwt": "5.3.3",
     "graphql": "^15.5.1",
+    "graphql-subscriptions": "^1.2.1",
     "jsonwebtoken": "8.5.1",
+    "mongoose": "^5.13.3",
     "notarealdb": "0.2.2"
   },
   "devDependencies": {

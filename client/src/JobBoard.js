@@ -1,30 +1,21 @@
-import React, { Component } from 'react';
-import { JobList } from './JobList';
+import React, { useState, useEffect } from 'react';
+import JobList from './JobList';
 import { loadJobs } from './requests';
 
-export class JobBoard extends Component {
+const JobBoard = ({}) => {
+  const [jobs, setJobs] = useState([]);
 
-  constructor(props) {
-    super(props);
-    this.state = {jobs: []};
-  }
-
-  componentDidMount() {
-    this.getJobs();
-  }
-
-  getJobs = async () => {
-    const jobs = await loadJobs();
-    this.setState({jobs});
-  }
+  useEffect(() => {
+    loadJobs().then((jobs) => setJobs(jobs));
+  }, []);
   
-  render() {
-    const {jobs} = this.state;
-    return (
-      <div>
-        <h1 className="title">Job Board</h1>
-        <JobList jobs={jobs} />
-      </div>
-    );
-  }
+  return (
+    <div>
+      <h1 className="title">Job Board</h1>
+      <JobList jobs={jobs} />
+    </div>
+  );
+
 }
+
+export default JobBoard;
