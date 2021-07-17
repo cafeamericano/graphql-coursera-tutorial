@@ -8,10 +8,6 @@ type Mutation {
     createJob(input: CreateJobInput): Job # See below custom definition
 }
 
-type Subscription {
-  jobAdded: Job
-}
-
 type Company {
     id: ID!
     name: String

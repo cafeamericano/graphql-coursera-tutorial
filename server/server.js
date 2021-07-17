@@ -6,7 +6,7 @@ const cors = require('cors');
 const express = require('express');
 const expressJwt = require('express-jwt');
 const jwt = require('jsonwebtoken');
-const db = require('./db');
+const db = require('./data/db');
 
 const port = 9000;
 const jwtSecret = Buffer.from('Zn8Q5tyZ/G1MHltc4F/gTkVJMlrbKiZt', 'base64');
@@ -18,8 +18,8 @@ app.use(cors(), bodyParser.json(), expressJwt({
 }));
 
 // GRAPHQL ITEMS
-const typeDefs = gql(fs.readFileSync('./schema.graphql', {encoding: 'utf8'}));
-const resolvers = require('./resolvers');
+const typeDefs = gql(fs.readFileSync('./graphql/schema.graphql', {encoding: 'utf8'}));
+const resolvers = require('./graphql/resolvers');
 
 const context = ({req, connection}) => {
   if (req && req.user) {
@@ -35,6 +35,7 @@ const context = ({req, connection}) => {
       userId: decodedToken.sub
     };
   }
+  return {};
 }
 
 const apolloServer = new ApolloServer({typeDefs, resolvers, context});
@@ -52,5 +53,4 @@ app.post('/login', (req, res) => {
 });
 
 const httpServer = http.createServer(app);
-apolloServer.installSubscriptionHandlers(httpServer);
 httpServer.listen(port, () => console.log(`Server started on port ${port}`));
