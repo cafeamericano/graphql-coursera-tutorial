@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import JobList from './JobList';
-import { loadJobs, onJobAdded } from './requests';
+import { loadJobs } from './requests';
 
 const JobBoard = ({}) => {
   const [jobs, setJobs] = useState([]);

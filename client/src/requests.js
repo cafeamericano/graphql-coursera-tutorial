@@ -1,13 +1,10 @@
 import {
     ApolloClient, ApolloLink, HttpLink, InMemoryCache, split
 } from '@apollo/client';
-import { WebSocketLink } from '@apollo/client/link/ws';
-import { getMainDefinition } from '@apollo/client/utilities';
 import gql from 'graphql-tag';
-import { getAccessToken, isLoggedIn } from "./auth";
+import { getAccessToken } from "./auth";
 
 const httpUrl = 'http://localhost:9000/graphql'
-const wsUrl = 'ws://localhost:9000/graphql';
 
 const httpLink = ApolloLink.from([
     new ApolloLink((operation, forward) => {
@@ -20,19 +17,8 @@ const httpLink = ApolloLink.from([
     new HttpLink({uri: httpUrl})
 ]);
 
-const wsLink = new WebSocketLink({uri: wsUrl, options: {
-    lazy: true,
-    reconnect: true
-}});
-  
-function isSubscription(operation) {
-const definition = getMainDefinition(operation.query);
-return definition.kind === 'OperationDefinition'
-    && definition.operation === 'subscription';
-}
-
 const client = new ApolloClient({
-    link: split(isSubscription, wsLink, httpLink),
+    link: httpLink,
     cache: new InMemoryCache()
 });
 
@@ -89,19 +75,6 @@ const companyQuery = gql`
     }
 `;
 
-const jobAddedSubscription = gql`
-  subscription {
-    jobAdded {
-        id
-        title
-        company {
-            id
-            name
-        }
-    }
-  }
-`;
-
 export async function loadJob(id) {
     const {data} = await client.query({query: jobQuery, variables: {id}});
     return data.job;
@@ -136,8 +109,3 @@ export async function createJob(input) {
     });
     return job;
 }
-
-export function onJobAdded(handleJob) {
-    const observable = client.subscribe({query: jobAddedSubscription});
-    return observable.subscribe(({data}) => handleJob(data.jobAdded));
-  }
