@@ -1,12 +1,12 @@
 import React, { Component, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { loadJob, createJob } from './requests';
+import services from '../services';
 
 const JobDetail = ({match}) => {
   const [jobDetails, setJobDetails] = useState(null);
 
   useEffect(() => {
-    loadJob(match.params.jobId).then((job) => setJobDetails(job));
+    services.loadJob(match.params.jobId).then((job) => setJobDetails(job));
   }, []);
 
   if (!jobDetails) { return null; }

@@ -1,12 +1,12 @@
 import React, { Component, useEffect, useState } from 'react';
-import { loadCompany } from './requests';
-import JobList from './JobList';
+import services from '../services';
+import JobList from './JobList.jsx';
 
 const CompanyDetail = ({match}) => {
   const [company, setCompany] = useState({jobs: []});
 
   useEffect(() => {
-    loadCompany(match.params.companyId).then((company) => {
+    services.loadCompany(match.params.companyId).then((company) => {
       console.log(company)
       setCompany(company);
     });

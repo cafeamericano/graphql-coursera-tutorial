@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
 const JobList = ({jobs}) => {
-
-  console.log(jobs);
   
   const renderJob = (job) => {
     const title = job.company ? `${job.title} at ${job.company.name}` : job.title;

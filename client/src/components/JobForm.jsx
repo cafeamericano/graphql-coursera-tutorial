@@ -1,5 +1,5 @@
 import React, { Component, useState } from 'react';
-import { loadJob, createJob } from './requests';
+import services from '../services';
 
 const JobForm = ({history}) => {
   const [title, setTitle] = useState('');
@@ -7,7 +7,7 @@ const JobForm = ({history}) => {
 
   const submitForm = (event) => {
     event.preventDefault();
-    createJob({title, description}).then((job) => history.push(`/jobs/${job.id}`));
+    services.createJob({title, description}).then((job) => history.push(`/jobs/${job.id}`));
   }
 
   return (

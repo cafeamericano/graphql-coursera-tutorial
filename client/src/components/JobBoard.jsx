@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import JobList from './JobList';
-import { loadJobs } from './requests';
+import services from '../services';
 
-const JobBoard = ({}) => {
+const JobBoard = () => {
   const [jobs, setJobs] = useState([]);
 
   useEffect(() => {
-    loadJobs().then((jobs) => setJobs(jobs));
+    services.loadJobs().then((jobs) => setJobs(jobs));
   }, []);
   
   return (
