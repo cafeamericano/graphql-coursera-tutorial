@@ -1,9 +1,15 @@
 import gql from 'graphql-tag';
-import { jobDetailFragment } from './fragments';
+import { 
+    jobDetailFragment,
+    jobsListFragment,
+    companyDetailFragment
+} from './fragments';
 
 export const jobQuery = gql`
     query JobQuery($id: ID!) {
-        job(id: $id) { ...JobDetail }
+        job(id: $id) { 
+            ...JobDetail 
+        }
     }
     ${jobDetailFragment}
 `;
@@ -11,26 +17,17 @@ export const jobQuery = gql`
 export const jobsQuery = gql`
     query JobsQuery {
         jobs {
-            id
-            title
-            company {
-                id
-                name
-            }
+            ...JobsList 
         }
     }
+    ${jobsListFragment}
 `;
 
 export const companyQuery = gql`
     query CompanyQuery($id: ID!) {
-        company(id: $id) {
-            id
-            name
-            description
-            jobs {
-                id
-                title
-            }
+        company(id: $id) { 
+            ...CompanyDetail
         }
     }
+    ${companyDetailFragment}
 `;

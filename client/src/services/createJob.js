@@ -2,7 +2,7 @@ import client from '../graphql/client';
 import { createJobMutation } from '../graphql/mutations';
 import { jobQuery } from '../graphql/queries';
 
-async function createJob(input) {
+const createJob = async (input) => {
     const {data: {job}} = await client.mutate({
         mutation: createJobMutation, 
         variables: {input},

@@ -2,7 +2,6 @@ import client from '../graphql/client';
 import { jobsQuery } from '../graphql/queries';
 
 const loadJobs = async () => {
-    console.log('preparing to pull jobs')
     const {data} = await client.query({query: jobsQuery, fetchPolicy: 'no-cache'});
     /* 
         Cache options
